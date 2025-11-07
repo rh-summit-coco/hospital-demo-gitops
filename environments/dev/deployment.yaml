@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-ex
+  namespace: janine-dev
+  labels:
+    app: nodejs-ex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodejs-ex
+  template:
+    metadata:
+      labels:
+        app: nodejs-ex
+    spec:
+      containers:
+      - name: nodejs-ex
+        image: image-registry.openshift-image-registry.svc:5000/janine-dev/nodejs-ex:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: NODE_ENV
+          value: production
+        - name: PORT
+          value: "8080"
