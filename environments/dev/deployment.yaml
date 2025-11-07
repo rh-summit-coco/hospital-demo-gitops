@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: nodejs-ex
-        image: image-registry.openshift-image-registry.svc:5000/janine-dev/nodejs-ex:latest
+        image: image-registry.openshift-image-registry.svc:5000/janine-dev/nodejs-ex:3b2d5c639e18b32ed0a20018ee7d4a8c41bb1c15
         ports:
         - containerPort: 8080
         env:
