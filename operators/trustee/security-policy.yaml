@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: security-policy
+  namespace: trustee-operator-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+data:
+  security-policy.json: |
+    {
+      "default": [
+        {
+          "type": "reject"
+        }
+      ],
+      "transports": {
+        "docker": {
+          "quay.io": [
+            {
+              "type": "signedBy",
+              "keyType": "GPGKeys",
+              "keyPath": "/etc/pki/containers/policy-key.pub"
+            }
+          ],
+          "registry.redhat.io": [
+            {
+              "type": "signedBy",
+              "keyType": "GPGKeys",
+              "keyPath": "/etc/pki/containers/redhat-key.pub"
+            }
+          ],
+          "registry.access.redhat.com": [
+            {
+              "type": "signedBy",
+              "keyType": "GPGKeys",
+              "keyPath": "/etc/pki/containers/redhat-key.pub"
+            }
+          ]
+        }
+      }
+    }

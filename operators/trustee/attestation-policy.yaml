@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: attestation-policy
+  namespace: trustee-operator-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+data:
+  policy.rego: |
+    package policy
+
+    import rego.v1
+
+    default allow := false
+
+    # Azure vTPM SNP attestation policy
+    # This policy validates Azure confidential VMs using vTPM measurements
+
+    allow if {
+        print("== Attestation Policy Evaluation ==")
+        print("TEE:", input.tee)
+        print("Evidence:", input.evidence)
+
+        # Verify this is Azure vTPM SNP attestation
+        input.tee == "azsnpvtpm"
+
+        # Validate PCR values from RVPS
+        validate_pcrs
+
+        # Validate container image measurements
+        validate_container_image
+    }
+
+    # Validate Platform Configuration Registers (PCRs)
+    # PCR 03: Firmware and UEFI boot
+    # PCR 08: Kernel command line
+    # PCR 09: Kernel image and initrd
+    # PCR 11: Boot configuration
+    # PCR 12: Kernel command line and initrd
+    validate_pcrs if {
+        print("Validating PCRs...")
+
+        # Get reference PCR values from RVPS
+        reference_pcrs := data["reference-values"]["azure-vtpm-snp"]["pcrs"]
+
+        # Validate critical PCRs
+        input.evidence.pcrs["03"] == reference_pcrs["03"]
+        input.evidence.pcrs["08"] == reference_pcrs["08"]
+        input.evidence.pcrs["09"] == reference_pcrs["09"]
+        input.evidence.pcrs["11"] == reference_pcrs["11"]
+        input.evidence.pcrs["12"] == reference_pcrs["12"]
+
+        print("PCR validation: PASS")
+    }
+
+    # Validate container image signature and digest
+    validate_container_image if {
+        print("Validating container image...")
+
+        # Get reference image digests from RVPS
+        reference_images := data["reference-values"]["container-images"]
+
+        # Extract image reference from evidence
+        image_ref := input.evidence.image_reference
+
+        # Check if image is in approved list
+        some i
+        reference_images[i].image == image_ref
+
+        # Validate image digest matches
+        input.evidence.image_digest == reference_images[i].digest
+
+        print("Container image validation: PASS")
+    }
+
+    # Default deny with reason
+    deny contains msg if {
+        not allow
+        msg := "Attestation failed: TEE evidence does not meet policy requirements"
+    }

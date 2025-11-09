@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: aro-summit-demo
+  namespace: openshift-gitops
+spec:
+  generators:
+  - list:
+      elements:
+      - component: operators
+        syncWave: "1"
+      - component: infrastructure
+        syncWave: "2"
+      - component: policies
+        syncWave: "3"
+      - component: applications
+        syncWave: "4"
+  template:
+    metadata:
+      name: '{{component}}'
+      labels:
+        app.kubernetes.io/name: '{{component}}'
+        app.kubernetes.io/part-of: aro-summit-demo
+    spec:
+      project: default
+      source:
+        repoURL: 'https://github.com/rh-summit-coco/hospital-demo-gitops.git'
+        targetRevision: main
+        path: '{{component}}'
+        directory:
+          recurse: true
+      destination:
+        server: https://kubernetes.default.svc
+      syncPolicy:
+        automated:
+          prune: false  # Set to true after initial deployment
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        - ServerSideApply=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: aro-summit-demo-project
+  namespace: openshift-gitops
+spec:
+  description: ARO Summit Demo Platform
+  sourceRepos:
+  - '*'
+  destinations:
+  - namespace: '*'
+    server: '*'
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'

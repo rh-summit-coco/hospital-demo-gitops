@@ -1,0 +1,24 @@
+# Secrets and sensitive files - NEVER commit these!
+operators/sandboxed-containers/peer-pods-cm.yaml
+operators/sandboxed-containers/peer-pods-secret.yaml
+operators/sandboxed-containers/ssh-key-secret.yaml
+
+# SSH keys
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+
+# Temporary files
+*.tmp
+*.swp
+*~
+.DS_Store
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# Logs
+*.log

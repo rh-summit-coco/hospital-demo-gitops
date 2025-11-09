@@ -1,0 +1,25 @@
+# This is a TEMPLATE file. Copy to peer-pods-cm.yaml and fill in the values.
+# DO NOT commit the actual secret values to git!
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: peer-pods-cm
+  namespace: openshift-sandboxed-containers-operator
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+data:
+  CLOUD_PROVIDER: "azure"
+  VXLAN_PORT: "9000"
+  PROXY_TIMEOUT: "5m"
+  AZURE_INSTANCE_SIZE: "Standard_D2s_v3"
+  AZURE_INSTANCE_SIZES: "Standard_D2s_v3,Standard_D4s_v3"
+  AZURE_SUBNET_ID: "<REPLACE_WITH_YOUR_AZURE_SUBNET_ID>"
+  AZURE_NSG_ID: ""
+  AZURE_IMAGE_ID: ""
+  AZURE_REGION: "<REPLACE_WITH_YOUR_AZURE_REGION>"
+  AZURE_RESOURCE_GROUP: "<REPLACE_WITH_YOUR_AZURE_RESOURCE_GROUP>"
+  TAGS: "demo=summit,environment=dev"
+  PEERPODS_LIMIT_PER_NODE: "10"
+  ROOT_VOLUME_SIZE: "6"
+  DISABLECVM: "true"

@@ -1,0 +1,35 @@
+---
+# ArgoCD Application for nodejs-ex VM deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nodejs-ex-vm
+  namespace: openshift-gitops
+  labels:
+    app.kubernetes.io/name: nodejs-ex-vm
+    app.kubernetes.io/part-of: aro-summit-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"  # Deploy after applications
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/rh-summit-coco/hospital-demo-gitops.git'
+    targetRevision: main
+    path: infrastructure/azure
+    directory:
+      include: 'nodejs-ex-vm-*.yaml'
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: azure-infrastructure
+  syncPolicy:
+    automated:
+      prune: false  # Don't auto-delete VMs
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m

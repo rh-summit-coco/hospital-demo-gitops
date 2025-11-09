@@ -1,0 +1,156 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  name: policy-kata-runtime-janine
+  namespace: open-cluster-management
+  annotations:
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+spec:
+  remediationAction: enforce
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+          name: policy-kata-runtime-namespace
+        spec:
+          remediationAction: inform
+          severity: high
+          namespaceSelector:
+            include:
+              - janine-app
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: Namespace
+                metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+                  name: janine-app
+                  labels:
+                    runtime: kata-remote
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+          name: policy-kata-runtime-constraint-template
+        spec:
+          remediationAction: inform
+          severity: high
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: templates.gatekeeper.sh/v1
+                kind: ConstraintTemplate
+                metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+                  name: k8srequiredruntimeclass
+                spec:
+                  crd:
+                    spec:
+                      names:
+                        kind: K8sRequiredRuntimeClass
+                      validation:
+                        openAPIV3Schema:
+                          type: object
+                          properties:
+                            runtimeClass:
+                              type: string
+                            namespaces:
+                              type: array
+                              items:
+                                type: string
+                  targets:
+                    - target: admission.k8s.gatekeeper.sh
+                      rego: |
+                        package k8srequiredruntimeclass
+
+                        violation[{"msg": msg}] {
+                          input.review.kind.kind == "Pod"
+                          input.review.object.metadata.namespace == input.parameters.namespaces[_]
+                          not input.review.object.spec.runtimeClassName
+                          msg := sprintf("Pod %v in namespace %v must specify runtimeClassName", [input.review.object.metadata.name, input.review.object.metadata.namespace])
+                        }
+
+                        violation[{"msg": msg}] {
+                          input.review.kind.kind == "Pod"
+                          input.review.object.metadata.namespace == input.parameters.namespaces[_]
+                          input.review.object.spec.runtimeClassName != input.parameters.runtimeClass
+                          msg := sprintf("Pod %v must use runtimeClassName: %v (currently: %v)", [input.review.object.metadata.name, input.parameters.runtimeClass, input.review.object.spec.runtimeClassName])
+                        }
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+          name: policy-kata-runtime-constraint
+        spec:
+          remediationAction: inform
+          severity: high
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: constraints.gatekeeper.sh/v1beta1
+                kind: K8sRequiredRuntimeClass
+                metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+                  name: janine-app-kata-runtime
+                spec:
+                  match:
+                    kinds:
+                      - apiGroups: [""]
+                        kinds: ["Pod"]
+                    namespaces:
+                      - janine-app
+                  parameters:
+                    runtimeClass: kata-remote
+                    namespaces:
+                      - janine-app
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  name: binding-policy-kata-runtime-janine
+  namespace: open-cluster-management
+placementRef:
+  name: placement-policy-kata-runtime-janine
+  kind: PlacementRule
+  apiGroup: apps.open-cluster-management.io
+subjects:
+  - name: policy-kata-runtime-janine
+    kind: Policy
+    apiGroup: policy.open-cluster-management.io
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: PlacementRule
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  name: placement-policy-kata-runtime-janine
+  namespace: open-cluster-management
+spec:
+  clusterConditions:
+    - status: "True"
+      type: ManagedClusterConditionAvailable
+  clusterSelector:
+    matchExpressions:
+      - key: local-cluster
+        operator: In
+        values:
+          - "true"

@@ -1,0 +1,12 @@
+apiVersion: kataconfiguration.openshift.io/v1
+kind: KataConfig
+metadata:
+  name: cluster-kataconfig
+  namespace: openshift-sandboxed-containers-operator
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  enablePeerPods: true
+  checkNodeEligibility: false
+  logLevel: info

@@ -1,0 +1,35 @@
+apiVersion: confidentialcontainers.org/v1alpha1
+kind: KbsConfig
+metadata:
+  name: kbsconfig
+  namespace: trustee-operator-system
+  labels:
+    app.kubernetes.io/name: kbsconfig
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  # KBS (Key Broker Service) configuration
+  kbsConfigMapName: kbs-config-cm
+  kbsAuthSecretName: kbs-auth-public-key
+  kbsDeploymentType: AllInOneDeployment
+  kbsHttpsKeySecretName: kbs-https-key
+  kbsHttpsCertSecretName: kbs-https-certificate
+
+  # RVPS (Reference Value Provider Service) configuration
+  kbsRvpsRefValuesConfigMapName: rvps-reference-values
+
+  # Attestation Service configuration
+  kbsAsConfigMapName: attestation-policy
+
+  # Security policy configuration
+  kbsSecurityPolicyConfigMapName: security-policy
+
+  # Resource policy configuration
+  kbsResourcePolicyConfigMapName: resource-policy
+
+  # Service configuration
+  kbsServiceType: ClusterIP
+
+  # Image configuration (optional - uses operator defaults if not specified)
+  # kbsImageName: registry.redhat.io/openshift-sandboxed-containers/kbs-rhel9:1.10

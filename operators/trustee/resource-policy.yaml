@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: resource-policy
+  namespace: trustee-operator-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+data:
+  policy.rego: |
+    package policy
+
+    import rego.v1
+
+    # Simple allow-all policy for demo purposes
+    # In production, this would validate attestation evidence
+    default allow := true
