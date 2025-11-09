@@ -124,6 +124,8 @@ spec:
       - name: azure-cli
         image: mcr.microsoft.com/azure-cli:latest
         env:
+        - name: HOME
+          value: "/tmp"
         - name: AZURE_CLIENT_ID
           valueFrom:
             secretKeyRef:
@@ -154,7 +156,9 @@ spec:
         - name: cloud-init
           mountPath: /cloud-init
         - name: ssh-key
-          mountPath: /root/.ssh
+          mountPath: /tmp/.ssh
+        - name: azure-home
+          mountPath: /tmp
         command:
         - /bin/bash
         - -c
@@ -200,7 +204,7 @@ spec:
               --image RedHat:rhel-raw:9_4:latest \
               --size Standard_D2s_v3 \
               --admin-username azureuser \
-              --ssh-key-values "$(cat /root/.ssh/id_rsa.pub)" \
+              --ssh-key-values "$(cat /tmp/.ssh/id_rsa.pub)" \
               --public-ip-sku Standard \
               --custom-data /cloud-init/cloud-init.yaml \
               --os-disk-size-gb 64
@@ -230,6 +234,8 @@ spec:
         secret:
           secretName: azure-ssh-key
           defaultMode: 0600
+      - name: azure-home
+        emptyDir: {}
 ---
 # ServiceAccount for VM deployment
 apiVersion: v1
