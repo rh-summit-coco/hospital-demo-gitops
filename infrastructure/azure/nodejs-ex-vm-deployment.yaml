@@ -53,13 +53,13 @@ data:
           TimeoutStartSec=300
 
           ExecStartPre=-/usr/bin/podman rm -f nodejs-ex
-          ExecStartPre=/usr/bin/podman pull quay.io/jensfr/hospital-janine-app:latest
+          ExecStartPre=/usr/bin/podman pull quay.io/jensfr/hospital-janine-app:master
           ExecStart=/usr/bin/podman run --rm \
             --name nodejs-ex \
             -p 8080:8080 \
             -e NODE_ENV=production \
             -e PORT=8080 \
-            quay.io/jensfr/hospital-janine-app:latest
+            quay.io/jensfr/hospital-janine-app:master
 
           ExecStop=/usr/bin/podman stop -t 10 nodejs-ex
 
@@ -89,7 +89,7 @@ data:
           #!/bin/bash
           set -e
           echo "=== Updating nodejs-ex ==="
-          podman pull quay.io/jensfr/hospital-janine-app:latest
+          podman pull quay.io/jensfr/hospital-janine-app:master
           systemctl restart nodejs-ex.service
           echo "[OK] Updated successfully"
 
