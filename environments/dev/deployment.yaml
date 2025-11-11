@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: nodejs-ex
-        image: image-registry.openshift-image-registry.svc:5000/janine-dev/nodejs-ex:master
+        image: quay.io/jensfr/hospital-janine-app:latest
         ports:
         - containerPort: 8080
         env:

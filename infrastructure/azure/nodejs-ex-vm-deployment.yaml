@@ -53,13 +53,13 @@ data:
           TimeoutStartSec=300
 
           ExecStartPre=-/usr/bin/podman rm -f nodejs-ex
-          ExecStartPre=/usr/bin/podman pull --tls-verify=false default-route-openshift-image-registry.apps.uhfgfgde.eastus.aroapp.io/janine-dev/nodejs-ex:latest
+          ExecStartPre=/usr/bin/podman pull quay.io/jensfr/hospital-janine-app:latest
           ExecStart=/usr/bin/podman run --rm \
             --name nodejs-ex \
             -p 8080:8080 \
             -e NODE_ENV=production \
             -e PORT=8080 \
-            default-route-openshift-image-registry.apps.uhfgfgde.eastus.aroapp.io/janine-dev/nodejs-ex:latest
+            quay.io/jensfr/hospital-janine-app:latest
 
           ExecStop=/usr/bin/podman stop -t 10 nodejs-ex
 
@@ -89,9 +89,9 @@ data:
           #!/bin/bash
           set -e
           echo "=== Updating nodejs-ex ==="
-          podman pull --tls-verify=false default-route-openshift-image-registry.apps.uhfgfgde.eastus.aroapp.io/janine-dev/nodejs-ex:latest
+          podman pull quay.io/jensfr/hospital-janine-app:latest
           systemctl restart nodejs-ex.service
-          echo "✅ Updated successfully"
+          echo "[OK] Updated successfully"
 
     runcmd:
       - systemctl enable firewalld
@@ -175,7 +175,7 @@ spec:
 
           echo "=== Checking if VM exists ==="
           if az vm show -g $RESOURCE_GROUP -n $VM_NAME &>/dev/null; then
-            echo "✅ VM exists - triggering update"
+            echo "[OK] VM exists - triggering update"
 
             # Get VM IP
             VM_IP=$(az vm show -d -g $RESOURCE_GROUP -n $VM_NAME --query publicIps -o tsv)
@@ -190,7 +190,7 @@ spec:
               --command-id RunShellScript \
               --scripts "/usr/local/bin/update-nodejs-ex.sh" || true
 
-            echo "✅ Update triggered on existing VM"
+            echo "[OK] Update triggered on existing VM"
           else
             echo "VM doesn't exist - creating new VM"
 
@@ -218,7 +218,7 @@ spec:
 
             echo ""
             echo "============================================"
-            echo "✅ nodejs-ex VM deployed successfully!"
+            echo "[OK] nodejs-ex VM deployed successfully!"
             echo ""
             echo "VM IP: $VM_IP"
             echo "Application URL: http://$VM_IP"

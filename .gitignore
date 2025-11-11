@@ -22,3 +22,5 @@ id_rsa.pub
 
 # Logs
 *.log
+infrastructure/azure/*-local.yaml
+.pipeline-config/git-credentials-secret.yaml

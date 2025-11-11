@@ -1,0 +1,32 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: secure-ci-test-real-gitops
+  namespace: janine-dev
+spec:
+  pipelineRef:
+    name: secure-ci-pipeline
+  params:
+    - name: git-url
+      value: https://github.com/sclorg/nodejs-ex.git
+    - name: git-revision
+      value: master
+    - name: image-name
+      value: nodejs-ex
+    - name: image-tag
+      value: latest
+  workspaces:
+    - name: source-ws
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+    - name: dockerconfig-ws
+      secret:
+        secretName: builder-dockercfg-75vpd
+    - name: git-credentials-ws
+      secret:
+        secretName: git-credentials
